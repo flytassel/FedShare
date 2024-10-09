@@ -6,7 +6,7 @@ def args_parser():
     # federated arguments
     parser.add_argument('--fed', type=str, default='fedavg', help="federated optimization algorithm")
     parser.add_argument('--mu', type=float, default=1e-2, help='hyper parameter for fedprox')
-    parser.add_argument('--rounds', type=int, default=200, help="total number of communication rounds")
+    parser.add_argument('--rounds', type=int, default=5, help="total number of communication rounds")
     parser.add_argument('--num_users', type=int, default=100, help="number of users: K")
     parser.add_argument('--frac', type=float, default=0.1, help="fraction of clients: C")
     parser.add_argument('--local_ep', type=int, default=10, help="number of local epochs: E")
@@ -31,7 +31,7 @@ def args_parser():
     parser.add_argument('--all_clients', action='store_true', help='aggregation over all clients')
     parser.add_argument('--sys_homo', action='store_true', help='no system heterogeneity')
     parser.add_argument('--tsboard', action='store_true', help='tensorboard')
-    parser.add_argument('--debug', action='store_true', help='debug')
+    parser.add_argument('--debug', action='store_true', default=True,help='debug')
     
     args = parser.parse_args()
     

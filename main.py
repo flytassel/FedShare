@@ -1,4 +1,5 @@
 import torch
+import torch_directml
 from torchvision import datasets, transforms
 from torch.utils.tensorboard import SummaryWriter
 
@@ -8,7 +9,7 @@ import random
 from tqdm import trange
 
 from utils.distribute import uniform_distribute, train_dg_split
-from utils.sampling import iid, noniid
+from utils.sampling import iid, noniid, noniid_own
 from utils.options import args_parser
 from src.update import ModelUpdate
 from src.nets import MLP, CNN_v1, CNN_v2
@@ -20,8 +21,8 @@ writer = SummaryWriter()
 if __name__ == '__main__':
     # parse args
     args = args_parser()
-    args.device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')
- 
+    dml_device = torch_directml.device()
+    args.device = dml_device
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)     
@@ -45,7 +46,8 @@ if __name__ == '__main__':
         if args.sampling == 'iid':
             dict_users = iid(dataset_train, args.num_users)
         elif args.sampling == 'noniid':
-            dict_users = noniid(dataset_train, args)
+            #dict_users = noniid(dataset_train, args)
+            dict_users = noniid_own(dataset_train, args)
         else:
             exit('Error: unrecognized sampling')
     
@@ -104,7 +106,9 @@ if __name__ == '__main__':
         
     # initialization stage of FedShare
     initialization_stage = ModelUpdate(args=args, dataset=dataset, idxs=set(dg_idx))
-    w_glob, _ = initialization_stage.train(local_net = copy.deepcopy(net_glob).to(args.device), net = copy.deepcopy(net_glob).to(args.device))
+    w_glob, _ = initialization_stage.train(
+        local_net = copy.deepcopy(net_glob).to(args.device), 
+        net = copy.deepcopy(net_glob).to(args.device))
     net_glob.load_state_dict(w_glob)
 
     if args.all_clients: 
